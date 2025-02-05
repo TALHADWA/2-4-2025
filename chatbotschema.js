@@ -1,19 +1,32 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const chatbotSchema = new mongoose.Schema({
     id: {
-        type: String, // Corrected from Int to Number
+        type: String, // Consider ObjectId if needed: mongoose.Schema.Types.ObjectId
         required: true,
-        unique: true // Ensures each ID is unique
+        unique: true
     },
-    messageType: { // Renamed from "typeof" to "messageType"
+    messageType: { 
         type: String,
-        required: true
+        required: true,
+        enum: ["text", "image"] // Restricts values to only "text" or "image"
     },
     message: {
         type: String,
-        required: true
+        trim: true, // Removes leading/trailing spaces
+        required: function () {
+            return this.messageType === "text"; // Use function, not arrow function
+        }
+    },
+    imageUrl: {
+        type: String,
+        trim: true,
+        required: function () {
+            return this.messageType === "image"; // Use function, not arrow function
+        }
     }
 });
 
-module.exports = mongoose.model("Chatbot", chatbotSchema);
+// Export the model using `export default`
+const Chatbot = mongoose.model("Chatbot", chatbotSchema);
+export default Chatbot;

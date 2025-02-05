@@ -1,15 +1,34 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const schema = require("./schma"); // Ensure correct file name
-const bodyParser = require("body-parser");
-const Pusher = require("pusher");
-const uid=require("uid2");
-const chatbot=require("./chatbotschema");
+import express from "express";
+import mongoose from "mongoose";
+import schema from "./schma.js"; // Ensure the filename is correct
+import bodyParser from "body-parser";
+import Pusher from "pusher";
+import uid from "uid2";
+import chatbot from "./chatbotschema.js";
+import multer from "multer";
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-const multer  = require('multer')
+
 const upload = multer({ dest: 'uploads/' })
+import { initializeApp } from "firebase/app";
+import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"; // <-- Import ref here
+
+
+// TODO: Replace the following with your app's Firebase project configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAzNrLRffHqW4oyoVxk7d9oElel_SQwseM",
+    authDomain: "wanna-play-app-cb189.firebaseapp.com",
+    databaseURL: "https://wanna-play-app-cb189-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "wanna-play-app-cb189",
+    storageBucket: "wanna-play-app-cb189.appspot.com",
+    messagingSenderId: "22091205567",
+    appId: "1:22091205567:web:2b76bfde562c8dbb612f0a",
+    measurementId: "G-CSZMDTSDN4"
+  };
+
+const apps = initializeApp(firebaseConfig);
+const storage = getStorage(apps);
 
 app.get("/getbyid/:id", async function (req, res) {
     try {
@@ -105,26 +124,58 @@ const pusher = new Pusher({
 
 
 ///////////////////////////////////////////////////////chabotmobile
-app.post("/send_chatbot_message",async function (req,res) {
+app.post("/send_chatbot_message",upload.single("image"), async function (req,res) {
     
     try {
-        const message=new chatbot({
-            id:uid(2),
-            messageType:req.body.messageType,
-            message:req.body.message
-        })
-        const xc=await message.save();
-        pusher.trigger("chatbotchannel","chatbot",{
-            "message":req.body.message
-        })
-        const data=await chatbot.find();
-        data !=null ? res.send({
-            "message":"sended succesfully"
-        }) : res.send({
-            "error":"error"
+        // Prepare chatbot message
+        let messageData = {
+            id: uid(2),
+            messageType: req.body.messageType,
+            message: req.body.message,
+            
+        };
+
+        // If image is provided, upload it to Firebase Storage
+        if (req.file) {
+            const filePath = `images/${req.file.filename}`;  // Store with a unique name
+            const fileRef = ref(storage, filePath);
+            const fileBuffer = req.file.buffer;
+            const metadata = { contentType: req.file.mimetype };
+
+            // Upload the image to Firebase Storage
+            const snapshot = await uploadBytesResumable(fileRef, fileBuffer, metadata);
+
+            // Get the image URL after upload
+            const imageUrl = await getDownloadURL(snapshot.ref);
+
+            // Add the image URL to message data
+            messageData.imageUrl = imageUrl;
+        }
+
+        // Create new chatbot message instance
+        const message = new chatbot(messageData);
+
+        // Save message to DB
+        const savedMessage = await message.save();
+
+        // Trigger Pusher event (chatbot channel)
+        pusher.trigger("chatbotchannel", "chatbot", {
+            message: savedMessage.message,
+            imageUrl: savedMessage.imageUrl || null // Send imageUrl if available
         });
+
+        // Send response based on whether the message was saved
+        if (savedMessage) {
+            res.send({
+                message: "Message sent successfully",
+                data: savedMessage
+            });
+        } else {
+            res.status(500).send({ error: "Error saving message" });
+        }
     } catch (error) {
-        res.send(error);
+        console.error("Error:", error);
+        res.status(500).send({ error: "Error occurred while sending message" });
     }
    
 } )
