@@ -161,6 +161,7 @@ app.post("/send_chatbot_message",upload.single("image"), async function (req,res
         // Trigger Pusher event (chatbot channel)
         pusher.trigger("chatbotchannel", "chatbot", {
             message: savedMessage.message,
+            
           //  imageUrl: savedMessage.imageUrl || null // Send imageUrl if available
         });
 
