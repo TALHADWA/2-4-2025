@@ -29,7 +29,7 @@ const firebaseConfig = {
 
 const apps = initializeApp(firebaseConfig);
 const storage = getStorage(apps);
-
+console.log("jk");
 app.get("/getbyid/:id", async function (req, res) {
     try {
         try {
