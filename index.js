@@ -9,8 +9,11 @@ import multer from "multer";
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+const storagee = multer.memoryStorage(); // Store file in memory as a buffer
+const upload = multer({ storagee });
 
-const upload = multer({ dest: 'uploads/' })
+// const upload = multer({ dest: 'uploads/' })
+
 import { initializeApp } from "firebase/app";
 import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage"; // <-- Import ref here
 
@@ -137,13 +140,14 @@ app.post("/send_chatbot_message",upload.single("image"), async function (req,res
 
         // If image is provided, upload it to Firebase Storage
         if (req.file) {
-            const filePath = `images/${req.file.filename}`;  // Store with a unique name
+            const filePath = `images/${req.file.filename}`;  // // Store with a unique name
             const fileRef = ref(storage, filePath);
             const fileBuffer = req.file.buffer;
             const metadata = { contentType: req.file.mimetype };
 
             // Upload the image to Firebase Storage
-            const snapshot = await uploadBytesResumable(fileRef, fileBuffer, metadata);
+            const snapshot = await uploadBytes(fileRef, fileBuffer, metadata);
+            console.log("Buffer Length:", req.file.buffer.length);
 
             // Get the image URL after upload
             const imageUrl = await getDownloadURL(snapshot.ref);
