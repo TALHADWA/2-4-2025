@@ -132,7 +132,7 @@ app.post("/send_chatbot_message",upload.single("image"), async function (req,res
             id: uid(2),
             messageType: req.body.messageType,
             message: req.body.message,
-            
+            //
         };
 
         // If image is provided, upload it to Firebase Storage
