@@ -147,7 +147,7 @@ app.post("/send_chatbot_message",upload.single("image"), async function (req,res
 
             // Get the image URL after upload
             const imageUrl = await getDownloadURL(snapshot.ref);
-
+//
             // Add the image URL to message data
             messageData.imageUrl = imageUrl;
         }
