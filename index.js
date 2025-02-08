@@ -6,6 +6,8 @@ import Pusher from "pusher";
 import uid from "uid2";
 import chatbot from "./chatbotschema.js";
 import multer from "multer";
+import bcrypt from "bcrypt";
+import register from "./register_schema.js"
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -33,6 +35,67 @@ const firebaseConfig = {
 const apps = initializeApp(firebaseConfig);
 const storage = getStorage(apps);
 console.log("jk");
+const saltRounds = 10;
+app.post("/register", async function(req,res){
+const daa=await register.findOne({email:req.body.email});
+if(daa){
+    res.send({
+        "message":"Email already taken",
+    })
+}
+else{
+    const fc=new register({
+        id:uid(2),
+        email:req.body.email,
+       password:req.body.password
+
+    });
+   
+
+   const cv= await bcrypt.hash(fc.password, saltRounds).then(function(hash) {
+    fc.password=hash;
+    });
+
+console.log(fc.password);
+
+   const data=await fc.save();
+   res.send(data);
+
+
+}
+});
+
+
+
+app.post("/login", async function(req,res){
+const data=await register.findOne({email:req.body.email});
+if(data){
+    console.log(data);
+   const issame= await bcrypt.compare(req.body.password,data.password);
+if(issame){
+    res.send({
+        "message":"login successfull"
+    })
+}
+
+    // const dta=register({
+    //     // id:uid(2),.
+    //     email:req.body.email,
+    //     password:req.body.password
+    // })
+
+
+}
+else{
+    res.send({
+        "message":"not found"
+    })
+}
+
+
+
+
+    });
 app.get("/getbyid/:id", async function (req, res) {
     try {
         try {
