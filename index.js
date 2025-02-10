@@ -231,6 +231,8 @@ app.post("/send_chatbot_message",upload.single("image"), async function (req,res
         pusher.trigger("chatbotchannel", "chatbot", {
             message: savedMessage.message,
             messageType:savedMessage.messageType,
+            senderid:savedMessage.senderid,
+            receiverid:savedMessage.receiverid,
             //
            imageUrl: savedMessage.imageUrl || null // Send imageUrl if available
         });
