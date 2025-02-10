@@ -264,7 +264,16 @@ app.get("/get_chatbot_message",async function (req,res) {
 } )
 
 
-
+app.get("/users",async function (req,res) {
+    
+    try {
+       const message=await register.find();
+       res.send(message);
+    } catch (error) {
+        res.send(error);
+    }
+   
+} )
 
 
  
