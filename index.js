@@ -198,6 +198,8 @@ app.post("/send_chatbot_message",upload.single("image"), async function (req,res
             id: uid(2),
             messageType: req.body.messageType,
             message: req.body.message,
+            senderid:req.body.senderid,
+            receiverid:req.body.receiverid,
             //
         };
 

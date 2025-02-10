@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 
 const chatbotSchema = new mongoose.Schema({
+    senderid: {
+   type:String
+    },
+     receiverid: {
+     type: String
+    },
     id: {
         type: String, // Consider ObjectId if needed: mongoose.Schema.Types.ObjectId
         required: true,
