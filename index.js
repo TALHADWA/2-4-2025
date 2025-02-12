@@ -7,7 +7,9 @@ import uid from "uid2";
 import chatbot from "./chatbotschema.js";
 import multer from "multer";
 import bcrypt from "bcrypt";
-import register from "./register_schema.js"
+import register from "./register_schema.js";
+import ch from "./group_chatbot_function.js";
+import sendmessagess from "./goupchatsendmessage/group_chat_send_message.js";
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -65,7 +67,8 @@ console.log(fc.password);
 }
 });
 
-
+app.post("/fuck",ch);
+app.post("/sendgroupmessage",sendmessagess);
 
 app.post("/login", async function(req,res){
 const data=await register.findOne({email:req.body.email});
@@ -200,6 +203,7 @@ app.post("/send_chatbot_message",upload.single("image"), async function (req,res
             message: req.body.message,
             senderid:req.body.senderid,
             receiverid:req.body.receiverid,
+            
             //
         };
 
